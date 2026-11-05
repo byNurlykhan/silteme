@@ -13,7 +13,8 @@
   const CONFIG = {
     APPS_SCRIPT_URL: "https://script.google.com/macros/s/AKfycby8Kb5F0AEwunyDOb0jUkifKUhFAeQNzI4eV3BOVJ60V-5WeRBkh-mrl6LhU-fs2E0/exec",
     UNION_ACCOUNT: "@qazaqstan_kitaphanalar_odagy",
-    HASHTAGS: "#ЗерделіҰлт #КітапОқитынҰлт"
+    HASHTAGS: "#ЗерделіҰлт #КітапОқитынҰлт",
+    DISPLAY_TOTAL: 1000           // сайтта көрсетілетін кітапхана саны (нақты тізім бұдан көп болуы мүмкін)
   };
 </script>
 <style>
@@ -238,7 +239,7 @@
       </div>
       <h1>Контент сілтемесін ұсыну</h1>
     </div>
-    <p>Сіз жасаған әр контент бір оқырманды кітапқа жетелейді. Еңбегіңізбен бөлісіп, зерделі ұлт тәрбиелеуге үлес қосыңыз!</p>
+    <p>Біз Қазақстандағы 12&nbsp;141 кітапхана ішінен арнайы сіздерді таңдадық ❤️ Сіз жасаған әр контент бір оқырманды кітапқа жетелейді. Еңбегіңізбен бөлісіп, зерделі ұлт тәрбиелеуге үлес қосыңыз!</p>
     <div class="stat" id="stat" hidden>
       <div class="stat-line"><span id="stat-text"></span><b id="stat-pct"></b></div>
       <div class="bar"><i id="stat-bar"></i></div>
@@ -446,8 +447,8 @@
   function renderStat() {
     if (!libs.length || !statusLoaded) return;
     const ids = libs.filter((l) => data[l.id]);
-    const n = ids.length, total = libs.length;
-    const pct = total ? Math.round(n * 100 / total) : 0;
+    const n = ids.length, total = CONFIG.DISPLAY_TOTAL || libs.length;
+    const pct = total ? Math.min(100, Math.round(n * 100 / total)) : 0;
     $("stat").hidden = false;
     $("stat-text").textContent = fmtNum(total) + " кітапханадан " + fmtNum(n) + " кітапхана сілтеме жіберді";
     $("stat-pct").textContent = pct + "%";
