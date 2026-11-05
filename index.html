@@ -1,0 +1,528 @@
+<!doctype html>
+<html lang="kk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Сілтемені жүктеу</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<script>
+  // ===== БАПТАУЛАР =====
+  const CONFIG = {
+    APPS_SCRIPT_URL: "https://script.google.com/macros/s/AKfycby8Kb5F0AEwunyDOb0jUkifKUhFAeQNzI4eV3BOVJ60V-5WeRBkh-mrl6LhU-fs2E0/exec",          // Apps Script Web App URL (.../exec)
+    UNION_ACCOUNT: "@qazaqstan_kitaphanalar_odagy",        // Қазақстан кітапханалар одағының Instagram аккаунты
+    HASHTAGS: "#КітапОқитынҰлт #ЗерделіҰлт"
+  };
+</script>
+<style>
+  :root {
+    --bg: #f5f8fc;
+    --card: #ffffff;
+    --text: #1d2733;
+    --muted: #5b6878;
+    --line: #dbe3ec;
+    --accent: #1f6fd1;
+    --accent-dark: #1659a8;
+    --ok-bg: #e7f6ec; --ok: #1d7a3e;
+    --err-bg: #fdecec; --err: #b42318;
+    --warn-bg: #fff6e0; --warn: #8a5a00;
+    --info-bg: #eaf2fd;
+    --radius: 14px;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: "Inter", sans-serif;
+    font-size: 17px;
+    line-height: 1.5;
+  }
+  main { max-width: 560px; margin: 0 auto; padding: 20px 16px 48px; }
+  h1 { font-size: 1.45rem; line-height: 1.25; margin: 8px 0 6px; }
+  .lead { color: var(--muted); margin: 0 0 20px; }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 18px 16px;
+    margin-bottom: 16px;
+  }
+  label, .label { display: block; font-weight: 600; margin-bottom: 8px; }
+  input[type=text], input[type=url] {
+    width: 100%;
+    font: inherit;
+    padding: 14px 14px;
+    border: 1.5px solid var(--line);
+    border-radius: 10px;
+    background: #fff;
+    color: var(--text);
+  }
+  input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(31,111,209,.15); }
+  .combo { position: relative; }
+  .list {
+    list-style: none; margin: 6px 0 0; padding: 4px;
+    border: 1px solid var(--line); border-radius: 10px; background: #fff;
+    max-height: 340px; overflow-y: auto;
+    box-shadow: 0 8px 24px rgba(20,40,70,.10);
+  }
+  .list li { padding: 10px 12px; border-radius: 8px; cursor: pointer; }
+  .list li .name { display: block; font-weight: 600; }
+  .list li .place { display: block; font-size: .88rem; color: var(--muted); }
+  .list li.active, .list li:hover { background: var(--info-bg); }
+  .list li.note { cursor: default; color: var(--muted); font-size: .9rem; background: none; }
+  .hint { font-size: .9rem; color: var(--muted); margin-top: 6px; }
+  dl { margin: 0; }
+  dt { font-size: .85rem; color: var(--muted); margin-top: 12px; }
+  dt:first-child { margin-top: 0; }
+  dd { margin: 2px 0 0; font-weight: 600; }
+  .book-author { font-weight: 400; color: var(--muted); }
+  .notice {
+    margin-top: 16px; padding: 12px 14px; border-radius: 10px;
+    background: var(--warn-bg); color: var(--warn); font-size: .95rem;
+  }
+  .notice .tags { display: block; font-weight: 700; margin-top: 6px; word-break: break-word; }
+  .btn {
+    display: block; width: 100%;
+    font: inherit; font-weight: 700; font-size: 1.05rem;
+    padding: 15px 18px; margin-top: 14px;
+    border: 0; border-radius: 12px; cursor: pointer;
+    background: var(--accent); color: #fff;
+  }
+  .btn:hover { background: var(--accent-dark); }
+  .btn:disabled { opacity: .55; cursor: not-allowed; }
+  .btn.secondary { background: #fff; color: var(--accent); border: 1.5px solid var(--accent); }
+  .btn.small { display: inline-block; width: auto; padding: 8px 14px; font-size: .9rem; margin-top: 8px; }
+  .msg { margin-top: 14px; padding: 12px 14px; border-radius: 10px; font-size: .97rem; }
+  .msg.ok { background: var(--ok-bg); color: var(--ok); font-weight: 600; }
+  .msg.err { background: var(--err-bg); color: var(--err); }
+  .msg.info { background: var(--info-bg); color: var(--accent-dark); }
+  .msg.warn { background: var(--warn-bg); color: var(--warn); }
+  .msg a { color: inherit; word-break: break-all; }
+  .status-line { margin-top: 12px; font-size: .92rem; }
+  .status-line a { word-break: break-all; color: var(--accent); }
+  .report { text-align: center; color: var(--muted); font-size: 1rem; }
+  .report b { color: var(--text); }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Сілтемені жүктеу</h1>
+  <p class="lead">Кітапханаңызды таңдап, Instagram-дағы жарияланымыңыздың сілтемесін жіберіңіз.</p>
+
+  <div id="config-warning" class="msg warn" hidden>Сайт әлі толық бапталмаған: Apps Script сілтемесі көрсетілмеген. Әкімшіге хабарласыңыз.</div>
+
+  <!-- 1. Кітапхана таңдау -->
+  <section class="card">
+    <label for="lib-input">1. Кітапханаңызды таңдаңыз</label>
+    <div class="combo">
+      <input id="lib-input" type="text" role="combobox" aria-autocomplete="list" aria-expanded="false"
+             aria-controls="lib-list" autocomplete="off" placeholder="Жүктелуде…" disabled>
+      <ul id="lib-list" class="list" role="listbox" hidden></ul>
+    </div>
+    <div id="lib-hint" class="hint">Кітапхананың атауын жаза бастаңыз — тізім сүзіледі.</div>
+    <div id="load-msg" class="msg info">Кітапханалар тізімі жүктелуде…</div>
+  </section>
+
+  <!-- 2. Кітапхана деректері -->
+  <section id="details" class="card" hidden>
+    <dl>
+      <dt>Кітапхана</dt>
+      <dd id="d-library"></dd>
+      <dt>Кітап</dt>
+      <dd><span id="d-book"></span><br><span id="d-author" class="book-author"></span></dd>
+      <dt>Жариялау күні</dt>
+      <dd id="d-date"></dd>
+      <dt>Жариялау уақыты</dt>
+      <dd id="d-time"></dd>
+      <dt>Контент форматы</dt>
+      <dd id="d-format"></dd>
+    </dl>
+    <div class="notice">
+      Жариялағанда Қазақстан кітапханалар одағын <a id="d-union" target="_blank" rel="noopener" style="color:inherit;font-weight:700"></a> бірлескен автор етіп шақырыңыз.
+      <span class="tags" id="d-tags"></span>
+      <button type="button" class="btn secondary small" id="copy-tags">Хэштегтерді көшіру</button>
+    </div>
+    <div id="d-status" class="status-line"></div>
+  </section>
+
+  <!-- 3. Сілтеме жіберу -->
+  <section id="send" class="card" hidden>
+    <form id="form" novalidate>
+      <label for="link-input">2. Жарияланым сілтемесі</label>
+      <input id="link-input" type="url" inputmode="url" autocomplete="off"
+             placeholder="https://www.instagram.com/p/…">
+      <div class="hint">Instagram-да жарияланымды ашып, «Бөлісу → Сілтемені көшіру» батырмасын басыңыз.</div>
+      <button type="submit" class="btn" id="submit-btn">Жіберу</button>
+    </form>
+    <div id="result" class="msg" hidden></div>
+    <div id="replace-box" class="msg warn" hidden>
+      <div>Бұл кітапхана үшін сілтеме бұрын жіберілген:</div>
+      <div><a id="old-link" href="#" target="_blank" rel="noopener"></a></div>
+      <div style="margin-top:6px">Жаңа сілтеме: <a id="new-link" href="#" target="_blank" rel="noopener"></a></div>
+      <button type="button" class="btn small" id="replace-btn">Ауыстыру</button>
+      <button type="button" class="btn secondary small" id="cancel-btn">Бас тарту</button>
+    </div>
+  </section>
+
+  <p class="report" id="report">Есеп жүктелуде…</p>
+</main>
+
+<script>
+(function () {
+  "use strict";
+
+  // ---------- Көмекші ----------
+  const $ = (id) => document.getElementById(id);
+  const MONTHS = ["қаңтар","ақпан","наурыз","сәуір","мамыр","маусым","шілде","тамыз","қыркүйек","қазан","қараша","желтоқсан"];
+  const WEEKDAYS = ["жексенбі","дүйсенбі","сейсенбі","сәрсенбі","бейсенбі","жұма","сенбі"];
+  const SLOTS = { 1: "09:00", 2: "13:00", 3: "18:00" };
+  const MAX_SHOWN = 60;
+
+  function lower(s) {
+    s = String(s || "");
+    try { return s.toLocaleLowerCase("kk-KZ"); } catch (e) { return s.toLowerCase(); }
+  }
+  function fmtNum(n) { return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, " "); }
+  function fmtDate(iso) {
+    const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(iso || ""));
+    if (!m) return iso || "—";
+    const y = +m[1], mo = +m[2], d = +m[3];
+    const wd = new Date(Date.UTC(y, mo - 1, d)).getUTCDay();
+    return d + " " + MONTHS[mo - 1] + " " + y + ", " + WEEKDAYS[wd];
+  }
+  function place(lib) { return [lib.region, lib.district].filter(Boolean).join(", "); }
+
+  // ---------- Күй ----------
+  let libs = [];
+  let byId = {};
+  let links = {};          // id -> сілтеме (серверден)
+  let statusLoaded = false;
+  let selected = null;
+  let shown = [];
+  let activeIdx = -1;
+  let pendingLink = null;
+
+  const input = $("lib-input"), list = $("lib-list");
+  const configured = /^https:\/\/script\.google\.com\//.test(CONFIG.APPS_SCRIPT_URL || "");
+  if (!configured) $("config-warning").hidden = false;
+
+  // ---------- Жүктеу ----------
+  async function fetchJson(url, opts, timeoutMs) {
+    const ctrl = new AbortController();
+    const t = setTimeout(() => ctrl.abort(), timeoutMs || 20000);
+    try {
+      const r = await fetch(url, Object.assign({ signal: ctrl.signal }, opts || {}));
+      if (!r.ok) throw new Error("HTTP " + r.status);
+      return await r.json();
+    } finally { clearTimeout(t); }
+  }
+
+  async function loadLibraries() {
+    try {
+      const data = await fetchJson("libraries.json", { cache: "no-cache" });
+      if (!Array.isArray(data)) throw new Error("format");
+      libs = data.map((x) => Object.assign({}, x, {
+        id: Number(x.id),
+        _hay: lower([x.library, x.district, x.region].join(" "))
+      })).filter((x) => Number.isInteger(x.id));
+      libs.sort((a, b) => String(a.library).localeCompare(String(b.library), "kk"));
+      byId = {};
+      libs.forEach((l) => { byId[l.id] = l; });
+      $("load-msg").hidden = true;
+      input.disabled = false;
+      input.placeholder = "Атауын жаза бастаңыз…";
+      renderReport();
+    } catch (e) {
+      $("load-msg").className = "msg err";
+      $("load-msg").textContent = "Кітапханалар тізімі жүктелмеді. Интернетті тексеріп, бетті жаңартыңыз.";
+    }
+  }
+
+  async function loadStatus() {
+    if (!configured) return false;
+    try {
+      const data = await fetchJson(CONFIG.APPS_SCRIPT_URL + "?action=status&t=" + Date.now());
+      if (!data || !data.ok) throw new Error("bad");
+      links = data.links || {};
+      statusLoaded = true;
+      renderReport();
+      if (selected) renderStatusLine();
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function renderReport() {
+    const el = $("report");
+    if (!libs.length) { el.textContent = ""; return; }
+    if (!statusLoaded) {
+      el.textContent = configured ? "Есеп жүктелуде…" : "";
+      return;
+    }
+    const n = libs.filter((l) => links[l.id]).length;
+    el.innerHTML = "";
+    el.append(fmtNum(libs.length) + " кітапханадан ");
+    const b = document.createElement("b"); b.textContent = fmtNum(n);
+    el.append(b, " сілтеме түсті");
+  }
+
+  // ---------- Іздеу тізімі ----------
+  function filter(q) {
+    const words = lower(q).trim().split(/\s+/).filter(Boolean);
+    if (!words.length) return libs;
+    return libs.filter((l) => words.every((w) => l._hay.indexOf(w) !== -1));
+  }
+
+  function openList() {
+    const found = filter(input.value);
+    shown = found.slice(0, MAX_SHOWN);
+    activeIdx = shown.length ? 0 : -1;
+    list.innerHTML = "";
+    if (!found.length) {
+      const li = document.createElement("li");
+      li.className = "note";
+      li.textContent = "Ештеңе табылмады. Атауын басқаша жазып көріңіз.";
+      list.append(li);
+    }
+    shown.forEach((l, i) => {
+      const li = document.createElement("li");
+      li.setAttribute("role", "option");
+      li.id = "opt-" + i;
+      const n = document.createElement("span"); n.className = "name"; n.textContent = l.library;
+      const p = document.createElement("span"); p.className = "place"; p.textContent = place(l);
+      li.append(n, p);
+      li.addEventListener("mousedown", (e) => { e.preventDefault(); choose(l); });
+      list.append(li);
+    });
+    if (found.length > MAX_SHOWN) {
+      const li = document.createElement("li");
+      li.className = "note";
+      li.textContent = "Тағы " + fmtNum(found.length - MAX_SHOWN) + " кітапхана бар — атауын толығырақ жазыңыз.";
+      list.append(li);
+    }
+    list.hidden = false;
+    input.setAttribute("aria-expanded", "true");
+    highlight();
+  }
+  function closeList() {
+    list.hidden = true;
+    input.setAttribute("aria-expanded", "false");
+    input.removeAttribute("aria-activedescendant");
+  }
+  function highlight() {
+    [...list.querySelectorAll("li[role=option]")].forEach((li, i) => {
+      const on = i === activeIdx;
+      li.classList.toggle("active", on);
+      li.setAttribute("aria-selected", on ? "true" : "false");
+      if (on) { input.setAttribute("aria-activedescendant", li.id); li.scrollIntoView({ block: "nearest" }); }
+    });
+  }
+
+  input.addEventListener("input", () => {
+    if (selected) { selected = null; hideDetails(); }
+    openList();
+  });
+  input.addEventListener("focus", () => { if (!selected) openList(); });
+  input.addEventListener("click", () => { if (list.hidden) openList(); });
+  input.addEventListener("blur", () => setTimeout(closeList, 120));
+  input.addEventListener("keydown", (e) => {
+    if (list.hidden && (e.key === "ArrowDown" || e.key === "ArrowUp")) { openList(); e.preventDefault(); return; }
+    if (e.key === "ArrowDown") { if (activeIdx < shown.length - 1) activeIdx++; highlight(); e.preventDefault(); }
+    else if (e.key === "ArrowUp") { if (activeIdx > 0) activeIdx--; highlight(); e.preventDefault(); }
+    else if (e.key === "Enter") { if (!list.hidden && shown[activeIdx]) { choose(shown[activeIdx]); e.preventDefault(); } }
+    else if (e.key === "Escape") { closeList(); }
+  });
+
+  // ---------- Таңдалған кітапхана ----------
+  function choose(l) {
+    selected = l;
+    input.value = l.library;
+    closeList();
+    $("d-library").textContent = l.library + (place(l) ? " (" + place(l) + ")" : "");
+    $("d-book").textContent = l.book ? "«" + l.book + "»" : "—";
+    $("d-author").textContent = l.author || "";
+    $("d-date").textContent = fmtDate(l.date);
+    $("d-time").textContent = SLOTS[Number(l.slot)] || "—";
+    $("d-format").textContent = l.format || "—";
+    $("d-union").textContent = CONFIG.UNION_ACCOUNT;
+    $("d-union").href = "https://www.instagram.com/" + String(CONFIG.UNION_ACCOUNT).replace(/^@/, "") + "/";
+    $("d-tags").textContent = CONFIG.HASHTAGS;
+    renderStatusLine();
+    resetMessages();
+    $("details").hidden = false;
+    $("send").hidden = false;
+    $("details").scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+  function hideDetails() {
+    $("details").hidden = true;
+    $("send").hidden = true;
+    resetMessages();
+  }
+  function renderStatusLine() {
+    const el = $("d-status");
+    el.innerHTML = "";
+    if (!selected || !statusLoaded) return;
+    const ex = links[selected.id];
+    if (ex) {
+      el.append("✓ Жіберілген сілтеме: ");
+      const a = document.createElement("a");
+      a.href = ex; a.target = "_blank"; a.rel = "noopener"; a.textContent = ex;
+      el.append(a);
+    } else {
+      el.textContent = "Бұл кітапхана үшін сілтеме әлі жіберілмеген.";
+    }
+  }
+
+  $("copy-tags").addEventListener("click", async () => {
+    const btn = $("copy-tags");
+    const text = CONFIG.HASHTAGS;
+    try {
+      await navigator.clipboard.writeText(text);
+    } catch (e) {
+      const ta = document.createElement("textarea");
+      ta.value = text; document.body.append(ta); ta.select();
+      try { document.execCommand("copy"); } catch (_) {}
+      ta.remove();
+    }
+    btn.textContent = "Көшірілді ✓";
+    setTimeout(() => { btn.textContent = "Хэштегтерді көшіру"; }, 1800);
+  });
+
+  // ---------- Сілтемені тексеру ----------
+  function cleanLink(raw) {
+    let s = String(raw || "").trim();
+    if (!s) return { error: "Сілтемені енгізіңіз." };
+    s = s.split(/[?#]/)[0];
+    if (!/^https?:\/\//i.test(s)) s = "https://" + s;
+    let u;
+    try { u = new URL(s); } catch (e) {
+      return { error: "Сілтеме дұрыс емес. Instagram жарияланымының толық сілтемесін қойыңыз." };
+    }
+    const host = u.hostname.toLowerCase();
+    if (["instagram.com", "www.instagram.com", "m.instagram.com"].indexOf(host) === -1) {
+      return { error: "Бұл Instagram сілтемесі емес. Сілтеме instagram.com мекенжайынан болуы керек." };
+    }
+    const m = /^\/(?:([A-Za-z0-9_.]+)\/)?(p|reel|reels|tv)\/([A-Za-z0-9_-]+)\/?$/.exec(u.pathname);
+    if (!m) {
+      return { error: "Бұл жарияланымның сілтемесі емес. Сілтемеде /p/, /reel/ немесе /tv/ болуы керек (профиль мен сторис сілтемесі қабылданбайды)." };
+    }
+    const link = "https://www.instagram.com/" + (m[1] ? m[1] + "/" : "") + m[2] + "/" + m[3] + "/";
+    if (link.length > 300) return { error: "Сілтеме тым ұзын (300 таңбадан аспауы керек)." };
+    return { link: link };
+  }
+
+  // ---------- Хабарламалар ----------
+  function showResult(kind, text, linkHref) {
+    const el = $("result");
+    el.className = "msg " + kind;
+    el.textContent = text;
+    if (linkHref) {
+      el.append(document.createElement("br"));
+      const a = document.createElement("a");
+      a.href = linkHref; a.target = "_blank"; a.rel = "noopener"; a.textContent = linkHref;
+      el.append(a);
+    }
+    el.hidden = false;
+  }
+  function resetMessages() {
+    $("result").hidden = true;
+    $("replace-box").hidden = true;
+    pendingLink = null;
+  }
+  function setBusy(on, label) {
+    const b = $("submit-btn");
+    b.disabled = on;
+    b.textContent = on ? (label || "Жіберілуде…") : "Жіберу";
+    $("replace-btn").disabled = on;
+  }
+
+  const ERRORS = {
+    bad_request: "Сұраным қате құрылған. Бетті жаңартып, қайталап көріңіз.",
+    bad_id: "Кітапхана дұрыс таңдалмаған. Тізімнен қайта таңдаңыз.",
+    bad_link: "Сервер бұл сілтемені қабылдамады. Instagram жарияланымының сілтемесін тексеріңіз.",
+    not_found: "Бұл кітапхана кестеде табылмады. Әкімшіге хабарласыңыз.",
+    busy: "Қазір жіберушілер көп. Бір минуттан кейін қайталап көріңіз.",
+    server: "Серверде қате шықты. Сәл кейін қайталап көріңіз."
+  };
+
+  // ---------- Жіберу ----------
+  $("form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    resetMessages();
+    if (!selected) { showResult("err", "Алдымен кітапханаңызды таңдаңыз."); return; }
+    const c = cleanLink($("link-input").value);
+    if (c.error) { showResult("err", c.error); $("link-input").focus(); return; }
+    $("link-input").value = c.link;
+    if (!configured) { showResult("err", "Сайт әлі бапталмаған, сілтемені қабылдау мүмкін емес. Әкімшіге хабарласыңыз."); return; }
+
+    setBusy(true, "Тексерілуде…");
+    const fresh = await loadStatus();
+    setBusy(false);
+    if (!fresh) { showResult("err", "Серверге қосылу мүмкін болмады. Интернетті тексеріп, қайталап көріңіз."); return; }
+
+    const existing = links[selected.id];
+    if (existing && existing === c.link) {
+      showResult("ok", "Бұл сілтеме бұрын қабылданған. Қайта жіберудің қажеті жоқ.", existing);
+      return;
+    }
+    if (existing) {
+      pendingLink = c.link;
+      $("old-link").href = existing; $("old-link").textContent = existing;
+      $("new-link").href = c.link; $("new-link").textContent = c.link;
+      $("replace-box").hidden = false;
+      return;
+    }
+    await send(selected.id, c.link);
+  });
+
+  $("replace-btn").addEventListener("click", async () => {
+    if (!selected || !pendingLink) return;
+    if (!confirm("Бұрынғы сілтеме жаңасымен ауыстырылсын ба?")) return;
+    const link = pendingLink;
+    $("replace-box").hidden = true;
+    await send(selected.id, link);
+  });
+  $("cancel-btn").addEventListener("click", resetMessages);
+
+  async function send(id, link) {
+    setBusy(true, "Жіберілуде…");
+    showResult("info", "Сілтеме жіберілуде, күте тұрыңыз…");
+    try {
+      const res = await fetchJson(CONFIG.APPS_SCRIPT_URL, {
+        method: "POST",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify({ id: id, link: link })
+      }, 30000);
+      if (res && res.ok) {
+        links[id] = link;
+        statusLoaded = true;
+        renderReport();
+        renderStatusLine();
+        $("link-input").value = "";
+        showResult("ok", "Рақмет! Сілтемеңіз қабылданды.");
+      } else {
+        showResult("err", ERRORS[res && res.code] || ERRORS.server);
+      }
+    } catch (e) {
+      showResult("err", e.name === "AbortError"
+        ? "Сервер ұзақ жауап бермеді. Сілтеме түспеген болуы мүмкін — бетті жаңартып, тексеріп көріңіз."
+        : "Серверге қосылу мүмкін болмады. Интернетті тексеріп, қайталап көріңіз.");
+    } finally {
+      pendingLink = null;
+      setBusy(false);
+    }
+  }
+
+  // ---------- Бастау ----------
+  loadLibraries();
+  loadStatus().then((ok) => {
+    if (!ok && configured) $("report").textContent = "Есеп әзірге жүктелмеді.";
+  });
+})();
+</script>
+</body>
+</html>
