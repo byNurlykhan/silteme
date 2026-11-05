@@ -236,7 +236,7 @@
       </div>
       <h1>Сілтемені жүктеу</h1>
     </div>
-    <p>Кітапханаңызды таңдап, кітап туралы жарияланымыңыздың сілтемелерін жіберіңіз.</p>
+    <p>Кітапханаңызды таңдап, контент сілтемесін енгізіңіз.</p>
     <div class="stat" id="stat" hidden>
       <div class="stat-line"><span id="stat-text"></span><b id="stat-pct"></b></div>
       <div class="bar"><i id="stat-bar"></i></div>
@@ -255,13 +255,13 @@
              aria-controls="lib-list" autocomplete="off" placeholder="Жүктелуде…" disabled>
       <ul id="lib-list" class="list" role="listbox" hidden></ul>
     </div>
-    <div class="hint">Атауын жаза бастаңыз — тізім сүзіледі. Атауы ұқсас кітапханаларды өңірі мен ауданы бойынша ажыратыңыз.</div>
+    <div class="hint">Кітапхана атауын жазыңыз. Ұқсас атауларды өңірі мен ауданы бойынша таңдаңыз.</div>
     <div id="load-msg" class="msg info">Кітапханалар тізімі жүктелуде…</div>
   </section>
 
   <!-- 2. Жоспар -->
   <section id="details" class="card" hidden>
-    <h2 class="step"><span class="n">2</span>Сіздің жарияланымыңыз</h2>
+    <h2 class="step"><span class="n">2</span>Жариялау жоспары</h2>
     <div class="lib-name" id="d-library"></div>
     <div class="lib-place" id="d-place"></div>
     <div class="book">
@@ -284,19 +284,19 @@
     </div>
   </section>
 
-  <!-- 3–4. Сілтемелер мен формат -->
+  <!-- 3, 4. Сілтемелер мен формат -->
   <form id="form" novalidate hidden>
     <section class="card">
-      <h2 class="step"><span class="n">3</span>Жарияланым сілтемелері</h2>
+      <h2 class="step"><span class="n">3</span>Контент сілтемесі</h2>
       <div id="nets"></div>
-      <div class="hint">Кемінде бір желінің сілтемесін қойыңыз. Кітапханаңызда қай желі болмаса, оны бос қалдырыңыз.
-        Сілтемені алу: жарияланымды ашып, «Бөлісу → Сілтемені көшіру».</div>
+      <div class="hint">Кемінде бір желідегі сілтемені енгізіңіз. Кітапханаңыздың парақшасы жоқ желіні бос қалдырыңыз.
+        Сілтемені көшіру үшін жарияланымды ашып, «Бөлісу», содан соң «Сілтемені көшіру» батырмасын басыңыз.</div>
     </section>
 
     <section class="card">
       <h2 class="step"><span class="n">4</span>Контент форматы</h2>
       <div class="chips" id="formats" role="radiogroup" aria-label="Контент форматы"></div>
-      <div class="hint">Жоспардағы формат алдын ала таңдалған. Басқа форматта жарияласаңыз, соны белгілеңіз.</div>
+      <div class="hint">Жоспардағы формат белгіленіп тұр. Контентті басқа форматта жарияласаңыз, соны таңдаңыз.</div>
     </section>
 
     <button type="submit" class="btn" id="submit-btn">
@@ -306,7 +306,7 @@
 
     <div id="result" class="msg" hidden></div>
     <div id="replace-box" class="msg warn" hidden>
-      <b>Бұл кітапхана бұрын сілтеме жіберген.</b> Мына өзгерістер енгізіледі:
+      <b>Бұл кітапхана сілтемені бұрын жіберген.</b> Енгізілетін өзгерістер:
       <ul class="changes" id="changes"></ul>
       <button type="button" class="btn small" id="replace-btn">Ауыстыру</button>
       <button type="button" class="btn ghost small" id="cancel-btn">Бас тарту</button>
@@ -355,7 +355,7 @@
   function fmtNum(n) { return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, " "); }
   function fmtDate(iso) {
     const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(iso || ""));
-    if (!m) return iso || "—";
+    if (!m) return iso || "Көрсетілмеген";
     const y = +m[1], mo = +m[2], d = +m[3];
     return d + " " + MONTHS[mo - 1] + " " + y + ", " + WEEKDAYS[new Date(Date.UTC(y, mo - 1, d)).getUTCDay()];
   }
@@ -475,7 +475,7 @@
       li.addEventListener("mousedown", (e) => { e.preventDefault(); choose(l); });
       list.append(li);
     });
-    if (found.length > MAX_SHOWN) list.append(el("li", "note", "Тағы " + fmtNum(found.length - MAX_SHOWN) + " кітапхана бар — атауын толығырақ жазыңыз."));
+    if (found.length > MAX_SHOWN) list.append(el("li", "note", "Тағы " + fmtNum(found.length - MAX_SHOWN) + " кітапхана бар. Атауын толығырақ жазыңыз."));
     list.hidden = false;
     input.setAttribute("aria-expanded", "true");
     highlight();
@@ -508,11 +508,11 @@
     closeList();
     $("d-library").textContent = l.library;
     $("d-place").textContent = place(l);
-    $("d-book").textContent = l.book ? "«" + l.book + "»" : "—";
+    $("d-book").textContent = l.book ? "«" + l.book + "»" : "Көрсетілмеген";
     $("d-author").textContent = l.author || "";
     $("d-date").textContent = fmtDate(l.date);
-    $("d-time").textContent = SLOTS[Number(l.slot)] || "—";
-    $("d-format").textContent = l.format || "—";
+    $("d-time").textContent = SLOTS[Number(l.slot)] || "Көрсетілмеген";
+    $("d-format").textContent = l.format || "Көрсетілмеген";
     fillForm();
     resetMessages();
     $("details").hidden = false;
@@ -528,7 +528,7 @@
       $("err-" + n.key).hidden = true;
       const lab = $("lab-" + n.key);
       lab.textContent = n.label;
-      if (ex && ex[i]) lab.append(el("span", "saved", "✓ қабылданған"));
+      if (ex && ex[i]) lab.append(el("span", "saved", "✓ жіберілген"));
     });
     const fmt = (ex && ex[4]) || (selected && selected.format) || "";
     document.querySelectorAll("input[name=format]").forEach((r) => {
@@ -714,7 +714,7 @@
       }
     } catch (e) {
       showResult("err", e.name === "AbortError"
-        ? "Сервер ұзақ жауап бермеді. Сілтеме түспеген болуы мүмкін — бетті жаңартып, тексеріп көріңіз."
+        ? "Сервер ұзақ жауап бермеді. Сілтеме түспеген болуы мүмкін. Бетті жаңартып, тексеріп көріңіз."
         : "Серверге қосылу мүмкін болмады. Интернетті тексеріп, қайталап көріңіз.");
     } finally {
       pending = null;
